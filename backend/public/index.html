@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MGNREGA - हमारी आवाज, हमारे अधिकार</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+
+        select, button {
+            padding: 12px 20px;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select {
+            min-width: 200px;
+        }
+
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+        }
+
+        button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            padding: 30px;
+            min-height: 400px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid #3498db;
+        }
+
+        .card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .stat {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 10px 0;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .comparison-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .error {
+            background: #e74c3c;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .success {
+            background: #27ae60;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .control-group {
+                flex-direction: column;
+            }
+            
+            select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌾 MGNREGA - हमारी आवाज, हमारे अधिकार</h1>
+            <p>आपके जिले का MGNREGA प्रदर्शन ट्रैक करें</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <select id="stateSelect">
+                    <option value="">राज्य चुनें</option>
+                    <option value="Uttar Pradesh" selected>उत्तर प्रदेश</option>
+                </select>
+                
+                <select id="districtSelect">
+                    <option value="">जिला चुनें</option>
+                </select>
+
+                <select id="yearSelect">
+                    <option value="">वर्ष चुनें</option>
+                    <option value="2023-24" selected>2023-24</option>
+                    <option value="2022-23">2022-23</option>
+                </select>
+
+                <button onclick="detectLocation()">📍 मेरा जिला ढूंढें</button>
+                <button onclick="loadData()">📊 डेटा देखें</button>
+                <button onclick="refreshData()">🔄 डेटा अपडेट करें</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div id="loading" class="loading" style="display: none;">
+                डेटा लोड हो रहा है... ⏳
+            </div>
+
+            <div id="dashboard"></div>
+            <div id="comparison"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+
+        // Initialize districts dropdown
+        async function initializeDistricts() {
+            try {
+                const response = await fetch(`${API_BASE}/districts`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const districtSelect = document.getElementById('districtSelect');
+                    districtSelect.innerHTML = '<option value="">जिला चुनें</option>';
+                    
+                    data.data.forEach(district => {
+                        const option = document.createElement('option');
+                        option.value = district.district_code;
+                        option.textContent = `${district.district_name} (${district.district_code})`;
+                        districtSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading districts:', error);
+            }
+        }
+
+        // Detect user location
+        async function detectLocation() {
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE}/location/detect`);
+                const data = await response.json();
+                
+                if (data.success && data.detected) {
+                    document.getElementById('districtSelect').value = data.data.district_code;
+                    showMessage('success', `आपका जिला: ${data.data.district_name}`);
+                    loadData();
+                } else {
+                    showMessage('error', 'जिला ऑटो-डिटेक्ट नहीं हो पाया। कृपया मैन्युअल चुनें।');
+                }
+            } catch (error) {
+                showMessage('error', 'लोकेशन डिटेक्ट करने में त्रुटि');
+            }
+            hideLoading();
+        }
+
+        // Load performance data
+        async function loadData() {
+            const districtCode = document.getElementById('districtSelect').value;
+            const year = document.getElementById('yearSelect').value;
+            
+            if (!districtCode) {
+                showMessage('error', 'कृपया जिला चुनें');
+                return;
+            }
+
+            showLoading();
+            try {
+                // Get district performance
+                const response = await fetch(`${API_BASE}/performance/district/${districtCode}?year=${year}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayDashboard(data.data, data.district);
+                    loadComparison(districtCode, year);
+                } else {
+                    showMessage('error', 'डेटा लोड करने में त्रुटि');
+                }
+            } catch (error) {
+                showMessage('error', 'नेटवर्क त्रुटि');
+            }
+            hideLoading();
+        }
+
+        // Display dashboard
+        function displayDashboard(performanceData, districtName) {
+            const dashboard = document.getElementById('dashboard');
+            
+            if (!performanceData || performanceData.length === 0) {
+                dashboard.innerHTML = '<div class="error">इस जिले के लिए डेटा उपलब्ध नहीं है</div>';
+                return;
+            }
+
+            const latestData = performanceData[0];
+            
+            dashboard.innerHTML = `
+                <h2>${districtName} - MGNREGA प्रदर्शन</h2>
+                <div class="dashboard">
+                    <div class="card">
+                        <h3>👨‍👩‍👧‍👦 रोजगार प्राप्त परिवार</h3>
+                        <div class="stat">${latestData.households_provided_employment.toLocaleString('hi-IN')}</div>
+                        <p>कुल परिवारों को रोजगार मिला</p>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>📅 कुल व्यक्ति-दिवस</h3>
+                        <div class="stat">${latestData.total_person_days.toLocaleString('hi-IN')}</div>
+                        <p>कुल कार्य दिवस</p>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>💰 कुल मजदूरी</h3>
+                        <div class="stat">₹${latestData.total_wages_paid.toLocaleString('hi-IN')}</div>
+                        <p>कुल भुगतान की गई मजदूरी</p>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>🏗️ कार्यों की स्थिति</h3>
+                        <div class="stat">${latestData.completed_works}/${latestData.total_works_taken_up}</div>
+                        <p>पूर्ण कार्य / कुल कार्य</p>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>मासिक प्रदर्शन - ${latestData.financial_year}</h3>
+                    <div id="performanceChart">
+                        <p>📈 चार्ट यहाँ दिखेगा (असल implementation में chart.js use करें)</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load comparison data
+        async function loadComparison(currentDistrict, year) {
+            try {
+                // Get all districts for comparison
+                const districtsResponse = await fetch(`${API_BASE}/districts`);
+                const districtsData = await districtsResponse.json();
+                
+                if (districtsData.success) {
+                    // Select 3 random districts for comparison (excluding current)
+                    const otherDistricts = districtsData.data
+                        .filter(d => d.district_code !== currentDistrict)
+                        .slice(0, 3)
+                        .map(d => d.district_code);
+                    
+                    const compareDistricts = [currentDistrict, ...otherDistricts];
+                    
+                    const response = await fetch(`${API_BASE}/compare`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            districtCodes: compareDistricts,
+                            year: year
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        displayComparison(data.data);
+                    }
+                }
+            } catch (error) {
+                console.error('Comparison error:', error);
+            }
+        }
+
+        // Display comparison
+        function displayComparison(comparisonData) {
+            const comparison = document.getElementById('comparison');
+            
+            comparison.innerHTML = `
+                <h3>🔍 जिला तुलना</h3>
+                <div class="comparison">
+                    ${comparisonData.map(district => `
+                        <div class="comparison-item">
+                            <h4>${district.district_name}</h4>
+                            <div class="stat">${district.households_provided_employment.toLocaleString('hi-IN')}</div>
+                            <small>परिवारों को रोजगार</small>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Refresh data
+        async function refreshData() {
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE}/refresh-data`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('success', 'डेटा सफलतापूर्वक अपडेट हो गया');
+                    initializeDistricts();
+                } else {
+                    showMessage('error', 'डेटा अपडेट विफल');
+                }
+            } catch (error) {
+                showMessage('error', 'अपडेट करने में त्रुटि');
+            }
+            hideLoading();
+        }
+
+        // Utility functions
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function showMessage(type, message) {
+            const dashboard = document.getElementById('dashboard');
+            dashboard.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDistricts();
+        });
+    </script>
+</body>
+</html>
