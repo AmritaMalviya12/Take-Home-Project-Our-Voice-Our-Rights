@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import config from './config';
 
 function SelectionPage({ onSelect }) {
   const [state, setState] = useState('Uttar Pradesh');
@@ -6,11 +7,11 @@ function SelectionPage({ onSelect }) {
   const [districts, setDistricts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Load districts from backend
+  // Load districts from backend - UPDATED URL
   useEffect(() => {
     const loadDistricts = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/districts/list');
+        const response = await fetch(`${config.apiBase}/districts/list`);
         const data = await response.json();
         
         if (data.success) {
@@ -49,6 +50,7 @@ function SelectionPage({ onSelect }) {
     }
   };
 
+  // ... (rest of your styles remain same)
   const selectStyle = {
     fontSize: '20px',
     padding: '15px',

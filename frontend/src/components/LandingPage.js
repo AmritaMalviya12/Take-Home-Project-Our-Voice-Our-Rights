@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import VoiceSearch from './VoiceSearch';
+import config from './config';
 
 function LandingPage({ onManualSelect, onAutoDetect }) {
   const [showVoiceSearch, setShowVoiceSearch] = useState(false);
 
   const handleAutoDetect = async () => {
     if (navigator.geolocation) {
-      // Show loading message
       alert('📍 आपकी लोकेशन डिटेक्ट की जा रही है...');
       
       navigator.geolocation.getCurrentPosition(
@@ -14,7 +14,6 @@ function LandingPage({ onManualSelect, onAutoDetect }) {
           const { latitude, longitude } = position.coords;
           
           try {
-            // Use OpenStreetMap Nominatim API for reverse geocoding
             const response = await fetch(
               `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=hi`
             );
@@ -22,7 +21,6 @@ function LandingPage({ onManualSelect, onAutoDetect }) {
             
             console.log('Location API Response:', data);
             
-            // Extract district from address
             const address = data.address;
             let district = '';
             
@@ -39,7 +37,6 @@ function LandingPage({ onManualSelect, onAutoDetect }) {
             }
             
             if (district) {
-              // Check if in Uttar Pradesh or show detected location
               const state = address.state || '';
               if (state.includes('Uttar Pradesh') || state.includes('UP')) {
                 alert(`📍 आपका जिला डिटेक्ट हुआ: ${district}`);
@@ -49,8 +46,8 @@ function LandingPage({ onManualSelect, onAutoDetect }) {
                 onAutoDetect(district);
               }
             } else {
-              // Fallback to backend location detection
-              const backendResponse = await fetch('http://localhost:5000/api/location/detect');
+              // Fallback to backend location detection - UPDATED URL
+              const backendResponse = await fetch(`${config.apiBase}/location/detect`);
               const backendData = await backendResponse.json();
               
               if (backendData.success) {
@@ -63,9 +60,9 @@ function LandingPage({ onManualSelect, onAutoDetect }) {
             }
           } catch (error) {
             console.error('Geocoding error:', error);
-            // Fallback to backend location detection
             try {
-              const backendResponse = await fetch('http://localhost:5000/api/location/detect');
+              // Fallback to backend location detection - UPDATED URL
+              const backendResponse = await fetch(`${config.apiBase}/location/detect`);
               const backendData = await backendResponse.json();
               
               if (backendData.success) {
@@ -82,7 +79,6 @@ function LandingPage({ onManualSelect, onAutoDetect }) {
           }
         },
         (error) => {
-          // Handle geolocation errors
           let errorMessage = '❌ लोकेशन एक्सेस में त्रुटि। ';
           
           switch (error.code) {
@@ -102,8 +98,8 @@ function LandingPage({ onManualSelect, onAutoDetect }) {
           
           alert(errorMessage);
           
-          // Try backend fallback
-          fetch('http://localhost:5000/api/location/detect')
+          // Try backend fallback - UPDATED URL
+          fetch(`${config.apiBase}/location/detect`)
             .then(response => response.json())
             .then(data => {
               if (data.success) {
@@ -134,6 +130,7 @@ function LandingPage({ onManualSelect, onAutoDetect }) {
     onAutoDetect(district);
   };
 
+  // ... (rest of your styles remain same)
   const buttonStyle = {
     width: '100%',
     height: '100px',
@@ -201,7 +198,6 @@ function LandingPage({ onManualSelect, onAutoDetect }) {
         </span>
       </p>
       
-      {/* Manual Selection Button */}
       <button 
         onClick={onManualSelect} 
         style={{ 
@@ -224,7 +220,6 @@ function LandingPage({ onManualSelect, onAutoDetect }) {
         </div>
       </button>
       
-      {/* Voice Search Button */}
       <button 
         onClick={() => setShowVoiceSearch(true)}
         style={{ 
@@ -247,7 +242,6 @@ function LandingPage({ onManualSelect, onAutoDetect }) {
         </div>
       </button>
       
-      {/* Location Detect Button */}
       <button 
         onClick={handleAutoDetect} 
         style={{ 
@@ -270,7 +264,6 @@ function LandingPage({ onManualSelect, onAutoDetect }) {
         </div>
       </button>
       
-      {/* Information Box */}
       <div style={infoBoxStyle}>
         <strong>ℹ️ जानकारी:</strong>
         <br/>• <strong>जिला चुनें:</strong> ड्रॉपडाउन से मनपसंद जिला चुनें
@@ -279,7 +272,6 @@ function LandingPage({ onManualSelect, onAutoDetect }) {
         <br/>• <strong>डेटा:</strong> रोजगार, मजदूरी, काम का पूरा डेटा
       </div>
 
-      {/* Features List */}
       <div style={{ 
         marginTop: '20px', 
         padding: '15px',

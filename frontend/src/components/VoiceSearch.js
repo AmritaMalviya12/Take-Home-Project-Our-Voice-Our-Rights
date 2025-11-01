@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import config from './config';
 
 function VoiceSearch({ onVoiceSelect, onClose }) {
   const [isListening, setIsListening] = useState(false);
@@ -7,14 +8,13 @@ function VoiceSearch({ onVoiceSelect, onClose }) {
   const [recognition, setRecognition] = useState(null);
 
   useEffect(() => {
-    // Initialize speech recognition
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
       recognition.continuous = false;
       recognition.interimResults = true;
-      recognition.lang = 'hi-IN'; // Hindi language
+      recognition.lang = 'hi-IN';
 
       recognition.onstart = () => {
         setIsListening(true);
@@ -73,7 +73,8 @@ function VoiceSearch({ onVoiceSelect, onClose }) {
     setStatus('processing');
     
     try {
-      const response = await fetch('http://localhost:5000/api/voice/search', {
+      // UPDATED URL - using config
+      const response = await fetch(`${config.apiBase}/voice/search`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -86,8 +87,8 @@ function VoiceSearch({ onVoiceSelect, onClose }) {
       if (data.success) {
         setStatus('success');
         
-        // Get district data
-        const districtResponse = await fetch(`http://localhost:5000/api/district/${data.district}`);
+        // Get district data - UPDATED URL
+        const districtResponse = await fetch(`${config.apiBase}/district/${data.district}`);
         const districtData = await districtResponse.json();
         
         if (districtData.success) {
