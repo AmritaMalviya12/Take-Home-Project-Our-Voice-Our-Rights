@@ -372,26 +372,27 @@ app.get('/', (req, res) => {
   }
 });
 
-// Catch-all route for SPA - FIXED VERSION
-app.get('*', (req, res) => {
-  // Check if it's an API route
-  if (req.path.startsWith('/api/')) {
-    return res.status(404).json({
-      success: false,
-      error: 'API endpoint not found: ' + req.path
-    });
-  }
+// // Catch-all route for SPA - FIXED VERSION
+// app.get('*', (req, res) => {
+//   // Check if it's an API route
+//   if (req.path.startsWith('/api/')) {
+//     return res.status(404).json({
+//       success: false,
+//       error: 'API endpoint not found: ' + req.path
+//     });
+//   }
+
   
-  // For all non-API routes, serve the frontend
-  try {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: 'Frontend loading failed'
-    });
-  }
-});
+//   // For all non-API routes, serve the frontend
+//   try {
+//     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       error: 'Frontend loading failed'
+//     });
+//   }
+// });
 
 // Error handler (should be last)
 app.use(errorHandler);
