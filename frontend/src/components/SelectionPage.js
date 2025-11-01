@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import config from './config';
+// import config from './config';
+const API_BASE = 'https://take-home-project-our-voice-our-rights-0ura-onrender.com/api';
 
 function SelectionPage({ onSelect }) {
   const [state, setState] = useState('Uttar Pradesh');
@@ -11,7 +12,7 @@ function SelectionPage({ onSelect }) {
   useEffect(() => {
     const loadDistricts = async () => {
       try {
-        const response = await fetch(`${config.apiBase}/districts/list`);
+        const response = await fetch(`${API_BASE}/districts/list`);
         const data = await response.json();
         
         if (data.success) {

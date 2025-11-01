@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import config from './config';
+// import config from './config';
+const API_BASE = 'https://take-home-project-our-voice-our-rights-0ura.onrender.com/api';
 
 function VoiceSearch({ onVoiceSelect, onClose }) {
   const [isListening, setIsListening] = useState(false);
@@ -73,8 +74,8 @@ function VoiceSearch({ onVoiceSelect, onClose }) {
     setStatus('processing');
     
     try {
-      // UPDATED URL - using config
-      const response = await fetch(`${config.apiBase}/voice/search`, {
+    
+      const response = await fetch(`${API_BASE}/voice/search`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -88,7 +89,7 @@ function VoiceSearch({ onVoiceSelect, onClose }) {
         setStatus('success');
         
         // Get district data - UPDATED URL
-        const districtResponse = await fetch(`${config.apiBase}/district/${data.district}`);
+        const districtResponse = await fetch(`${API_BASE}/district/${data.district}`);
         const districtData = await districtResponse.json();
         
         if (districtData.success) {

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import VoiceSearch from './VoiceSearch';
-import config from './config';
+// import config from './config';
+const API_BASE = 'https://take-home-project-our-voice-our-rights-0ura.onrender.com/api';
 
 function LandingPage({ onManualSelect, onAutoDetect }) {
   const [showVoiceSearch, setShowVoiceSearch] = useState(false);
@@ -47,7 +48,7 @@ function LandingPage({ onManualSelect, onAutoDetect }) {
               }
             } else {
               // Fallback to backend location detection - UPDATED URL
-              const backendResponse = await fetch(`${config.apiBase}/location/detect`);
+              const backendResponse = await fetch(`${API_BASE}/location/detect`);
               const backendData = await backendResponse.json();
               
               if (backendData.success) {
@@ -62,7 +63,7 @@ function LandingPage({ onManualSelect, onAutoDetect }) {
             console.error('Geocoding error:', error);
             try {
               // Fallback to backend location detection - UPDATED URL
-              const backendResponse = await fetch(`${config.apiBase}/location/detect`);
+              const backendResponse = await fetch(`${API_BASE}/location/detect`);
               const backendData = await backendResponse.json();
               
               if (backendData.success) {
@@ -99,7 +100,7 @@ function LandingPage({ onManualSelect, onAutoDetect }) {
           alert(errorMessage);
           
           // Try backend fallback - UPDATED URL
-          fetch(`${config.apiBase}/location/detect`)
+          fetch(`${API_BASE}/location/detect`)
             .then(response => response.json())
             .then(data => {
               if (data.success) {

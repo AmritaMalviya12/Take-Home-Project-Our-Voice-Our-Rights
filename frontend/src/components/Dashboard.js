@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import config from './config';
+// import config from './config';
+const API_BASE = 'https://take-home-project-our-voice-our-rights-0ura.onrender.com/api';
 
 function Dashboard({ district }) {
   const [showPastData, setShowPastData] = useState(false);
@@ -10,7 +11,7 @@ function Dashboard({ district }) {
   useEffect(() => {
     const loadDistrictData = async () => {
       try {
-        const response = await fetch(`${config.apiBase}/performance/${district}`);
+        const response = await fetch(`${API_BASE}/performance/${district}`);
         const result = await response.json();
         
         if (result.success) {
