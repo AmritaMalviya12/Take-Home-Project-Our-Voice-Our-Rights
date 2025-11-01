@@ -358,14 +358,39 @@ app.get('/api/location/detect', async (req, res) => {
   }
 });
 
-// Serve frontend
+// ================== FIXED ROUTES - DEPLOYMENT SAFE ==================
+
+// Serve frontend for root route
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  try {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Frontend not available'
+    });
+  }
 });
 
-// Catch-all route for SPA
+// Catch-all route for SPA - FIXED VERSION
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  // Check if it's an API route
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({
+      success: false,
+      error: 'API endpoint not found: ' + req.path
+    });
+  }
+  
+  // For all non-API routes, serve the frontend
+  try {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Frontend loading failed'
+    });
+  }
 });
 
 // Error handler (should be last)
